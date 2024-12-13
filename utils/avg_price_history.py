@@ -3,20 +3,13 @@ import pymongo
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from collections import defaultdict
-import db_service
 
 # Function to get the start of the 7-day interval for a given timestamp
 def get_week_start(date_obj):
     # Calculate the start of the week (7-day interval starts on the same weekday as the given date)
     return date_obj - timedelta(days=date_obj.weekday())
 
-def build_graph(entities):
-    url = "mongodb://localhost:27017/"
-    db = "wb-products"
-    col_name = "products"
-    #entities = ["Куртки", "Дутики", "Свитеры", "Водолазки", "Костюмы", "Толстовки", "Джинсы"]
-    products = db_service.get_by_entities(url, db, col_name, entities)
-    
+def build_graph(products):
     # Dictionary to hold prices for each timestamp (timestamp: [price1, price2, ...])
     timestamp_prices = defaultdict(list)
 

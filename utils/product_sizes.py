@@ -1,13 +1,7 @@
 import matplotlib.pyplot as plt
 from collections import defaultdict
-import db_service
 
-def build_graph():
-    url = "mongodb://localhost:27017/"
-    db = "wb-products"
-    col_name = "products"
-    products = db_service.get_by_entity(url, db, col_name, "Рубашки")
-    
+def build_graph(products):
     product_sizes = defaultdict(list)
     
     for product in products:
@@ -58,7 +52,3 @@ def build_graph():
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-    
-    return graph
-
-build_graph()
