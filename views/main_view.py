@@ -9,11 +9,20 @@ class MainWindow:
 
         # Setup the main frame
         self.top_frame = tk.Frame(self.root)
-        self.top_frame.pack(fill=tk.X)
+        self.top_frame.pack(fill=tk.X, pady=5)
+        
+        self.error_frame = tk.Frame(self.root)
+        self.error_frame.pack(fill=tk.X)
         
         self.main_frame = tk.Frame(self.root, bd=2, relief="solid", highlightbackground="blue", highlightcolor="red")
         self.main_frame.place(relx=0.15, rely=0.15, relwidth=0.7, relheight=0.7)
-        self.main_frame.pack(pady=20, expand=True, fill=tk.BOTH)
+        self.main_frame.pack(pady=5, expand=True, fill=tk.BOTH)
+        
+        self.left_frame = tk.Frame(self.main_frame, bd=2, relief="solid", highlightbackground="blue", highlightcolor="red")
+        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=40)
+
+        self.right_frame = tk.Frame(self.main_frame, bd=2, relief="solid", highlightbackground="blue", highlightcolor="red")
+        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, pady=40, padx=10)
 
         # Add widgets to the main frame
         self.create_widgets()
@@ -43,17 +52,10 @@ class MainWindow:
         self.import_data_button = ttk.Button(self.top_frame, text="Импорт")
         self.import_data_button.grid(row=0, column=3, padx=20)
         
-        # Frame with categories
-        self.create_categories_frame()
-
-    def create_categories_frame(self):
-        # Create frames
-        self.left_frame = tk.Frame(self.main_frame, bd=2, relief="solid", highlightbackground="blue", highlightcolor="red")
-        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, pady=40)
-
-        self.right_frame = tk.Frame(self.main_frame, bd=2, relief="solid", highlightbackground="blue", highlightcolor="red")
-        self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, pady=40, padx=10)
-
+        # Error Label
+        self.error_label = ttk.Label(self.error_frame, font=("Arial", 12), foreground="red")
+        self.error_label.pack(padx=30, pady=10)
+        
         # Create "Select All" button
         self.select_all_button = ttk.Button(self.right_frame, text="Выбрать/Отменить все")
         self.select_all_button.pack(pady=10, padx=40)
@@ -70,6 +72,7 @@ class MainWindow:
             self.num_products_label, 
             self.selected_list_label,
             self.selected_data,
+            self.error_label,
             self.left_frame
             )
         

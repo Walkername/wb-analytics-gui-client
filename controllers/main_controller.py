@@ -12,6 +12,7 @@ class MainController:
         num_products_label, 
         selected_list_label,
         selected_data,
+        error_label,
         left_frame
         ):
         
@@ -21,6 +22,7 @@ class MainController:
         self.num_products_label = num_products_label
         self.selected_list_label = selected_list_label
         self.selected_data = selected_data
+        self.error_label = error_label
         self.left_frame = left_frame
         
         self.selected_entities = []
@@ -33,22 +35,26 @@ class MainController:
         canvas.yview_scroll(-1 * int(event.delta / 120), "units")
     
     def toggle_select_all(self):
-        if len(self.selected_entities) == len(self.entities_dict):  # If all are selected, deselect all
-            self.selected_entities.clear()
-            self.num_selected_data = 0
-            # Clear all circles
-            for circle_canvas in self.entity_to_canvas.values():
-                circle_canvas.delete("indicator")
-        else:  # Otherwise, select all
-            for entity, number in sorted(self.entities_dict.items(), key=lambda item: item[1], reverse=True):
-                if entity not in self.selected_entities:
-                    self.selected_entities.append(entity)
-                    self.num_selected_data += number
-                    # Find the corresponding circle canvas and draw the circle
-                    circle_canvas = self.entity_to_canvas[entity]
-                    circle_canvas.create_oval(5, 5, 25, 25, fill="lightblue", tags="indicator")
-        
-        self.update_selected_list()
+        if len(self.entities_dict) != 0:
+            self.error_label.config(text=f"")
+            if len(self.selected_entities) == len(self.entities_dict):  # If all are selected, deselect all
+                self.selected_entities.clear()
+                self.num_selected_data = 0
+                # Clear all circles
+                for circle_canvas in self.entity_to_canvas.values():
+                    circle_canvas.delete("indicator")
+            else:  # Otherwise, select all
+                for entity, number in sorted(self.entities_dict.items(), key=lambda item: item[1], reverse=True):
+                    if entity not in self.selected_entities:
+                        self.selected_entities.append(entity)
+                        self.num_selected_data += number
+                        # Find the corresponding circle canvas and draw the circle
+                        circle_canvas = self.entity_to_canvas[entity]
+                        circle_canvas.create_oval(5, 5, 25, 25, fill="lightblue", tags="indicator")
+            
+            self.update_selected_list()
+        else:
+            self.error_label.config(text=f"Невозможно выбрать: данные не извлечены из БД")
     
     def update_selected_list(self):
         self.selected_list_label.config(text=f"Число выбранных категорий: {len(self.selected_entities)}")
@@ -113,7 +119,12 @@ class MainController:
             border_line.pack(fill=tk.X)
     
     def get_categories_from_db(self):
-        products = self.db_service.get_all_data()
+        if self.db_service.is_connected():
+            self.error_label.config(text=f"")
+            products = self.db_service.get_all_data()
+        else:
+            self.error_label.config(text=f"Ошибка: не удалось извлечь данные из БД")
+            return
         self.entities_dict.clear()
         self.num_selected_data = 0
         self.selected_entities.clear()
@@ -157,29 +168,36 @@ class MainController:
         products = self.db_service.get_by_entities(self.selected_entities)
         
         selected_option = default_option.get()
-        if selected_option == "История цены":
-            avg_price_history.build_graph(products)
-        elif selected_option == "Рейтинг от числа картинок":
-            pics_rating.build_graph(products)
-        elif selected_option == "Размеры одежды":
-            product_sizes.build_graph(products)
+        if len(self.selected_entities) != 0:
+            self.error_label.config(text=f"")
+            if selected_option == "История цены":
+                avg_price_history.build_graph(products)
+            elif selected_option == "Рейтинг от числа картинок":
+                pics_rating.build_graph(products)
+            elif selected_option == "Размеры одежды":
+                product_sizes.build_graph(products)
+            else:
+                self.error_label.config(text=f"Этот вариант недопустим для построения графика.")
         else:
-            print("Please select a valid option.")
+            self.error_label.config(text=f"Необходимо выбрать хотя бы одну категорию.")
 
     def export_data(self):
         file_path = filedialog.askdirectory(title="Выберите папку для сохранения")
-        
+        self.error_label.config(text=f"")
         if file_path:  # If a file is selected, print the file path
-            print(f"Selected file: {file_path}")
-            documents = list(self.db_service.get_all_data())
-            # Remove the MongoDB "_id" field if needed (optional)
-            for doc in documents:
-                doc.pop("_id", None)
-            
-            # Export to a JSON file
-            with open(f"{file_path}/exported_data.json", "w", encoding="utf-8") as file:
-                json.dump(documents, file, indent=4, ensure_ascii=False)
+            print(f"Selected directory: {file_path}")
+            if self.db_service.is_connected():
+                documents = list(self.db_service.get_all_data())
+                # Remove the MongoDB "_id" field if needed (optional)
+                for doc in documents:
+                    doc.pop("_id", None)
+                    
+                # Export to a JSON file
+                with open(f"{file_path}/exported_data.json", "w", encoding="utf-8") as file:
+                    json.dump(documents, file, indent=4, ensure_ascii=False)
+            else:
+                self.error_label.config(text=f"Ошибка: не удалось извлечь данные из БД")
         else:
-            print("No file selected.")
-    
+            self.error_label.config(text=f"Директория не выбрана.")
+        
     
