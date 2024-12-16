@@ -46,9 +46,9 @@ def build_graph(products):
             fontsize=10                        # Font size
         )
     
-    plt.xlabel('Number of Pictures')
-    plt.ylabel('Average Review Rating')
-    plt.title('Dependence of product rating on the amount of media content')
+    plt.xlabel('Размер')
+    plt.ylabel('Число товаров')
+    plt.title('Определение наиболее популярных размеров среди одежды')
     plt.grid(True)
     plt.tight_layout()
     plt.show()
