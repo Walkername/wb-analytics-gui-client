@@ -3,3 +3,6 @@ main.dist
 main.build
 main.onefile-build
 main.exe
+main.spec
+dist
+build
