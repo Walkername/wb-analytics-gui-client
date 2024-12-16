@@ -1,10 +1,13 @@
+import pymongo.errors
 from database.db_service import DBService
 from collections import defaultdict
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from database.db_service import DBService
-from utils import avg_price_history, pics_rating, product_sizes
+from utils import avg_price_history, pics_rating, product_sizes, rating_price
+from utils import brand_ratings_1, brand_ratings_2, brand_discounts, custom_prices_history
 import json
+import threading
 
 class MainController:
     def __init__(
@@ -176,28 +179,92 @@ class MainController:
                 pics_rating.build_graph(products)
             elif selected_option == "Размеры одежды":
                 product_sizes.build_graph(products)
+            elif selected_option == "Зависимость между рейтингом и стоимостью":
+                rating_price.build_graph(products)
+            elif selected_option == "Рейтинг брендов 1":
+                brand_ratings_1.build_graph(products)
+            elif selected_option == "Рейтинг брендов 2":
+                brand_ratings_2.build_graph(products)
+            elif selected_option == "Скидки брендов":
+                brand_discounts.build_graph(products)
+            elif selected_option == "История цены (37 категорий)":
+                custom_prices_history.build_graph()
             else:
                 self.error_label.config(text=f"Этот вариант недопустим для построения графика.")
         else:
             self.error_label.config(text=f"Необходимо выбрать хотя бы одну категорию.")
 
     def export_data(self):
+        # Start the export thread
+        thread_export = threading.Thread(target=self.export_thread, daemon=True)
+        thread_export.start()
+
+    def export_thread(self):
+        # File selection dialog
         file_path = filedialog.askdirectory(title="Выберите папку для сохранения")
-        self.error_label.config(text=f"")
-        if file_path:  # If a file is selected, print the file path
+        self.error_label.config(text=f"")  # Clear any previous messages
+
+        if file_path:  # If a directory is selected
             print(f"Selected directory: {file_path}")
             if self.db_service.is_connected():
                 documents = list(self.db_service.get_all_data())
+
                 # Remove the MongoDB "_id" field if needed (optional)
                 for doc in documents:
                     doc.pop("_id", None)
-                    
+
                 # Export to a JSON file
-                with open(f"{file_path}/exported_data.json", "w", encoding="utf-8") as file:
-                    json.dump(documents, file, indent=4, ensure_ascii=False)
+                try:
+                    with open(f"{file_path}/exported_data.json", "w", encoding="utf-8") as file:
+                        json.dump(documents, file, indent=4, ensure_ascii=False)
+                    self.error_label.after(0, lambda: self.error_label.config(text="Данные успешно экспортированы"))
+                except Exception as e:
+                    self.error_label.after(0, lambda: self.error_label.config(text=f"Ошибка экспорта: {e}"))
             else:
-                self.error_label.config(text=f"Ошибка: не удалось извлечь данные из БД")
+                self.error_label.after(0, lambda: self.error_label.config(text="Ошибка: не удалось подключиться к БД"))
         else:
-            self.error_label.config(text=f"Директория не выбрана.")
-        
+            self.error_label.after(0, lambda: self.error_label.config(text="Директория не выбрана"))
     
+    def import_data(self):
+        file_path = filedialog.askopenfilename(title="Выберите файл")
+        self.error_label.config(text=f"")
+        
+        self.elapsed_time = 0
+        self.cur_import_num = 0
+        self.total_import_num = 0
+        # Start the export thread
+        thread_import = threading.Thread(target=lambda: self.import_thread(file_path), daemon=True)
+        self.thread_import_running = True
+        thread_import.start()
+        self.update_timer()
+    
+    def import_thread(self, file_path):
+        if file_path:
+            print(f"Selected file: {file_path}")
+            if self.db_service.is_connected():
+                with open(file_path, "r", encoding="utf-8") as file:
+                    documents = json.load(file)
+                
+                # Insert the documents into the collection
+                if isinstance(documents, list):
+                    try:
+                        result = self.db_service.insert_many(documents)
+                        #result = self.collection.insert_many(documents, ordered=False)
+                    except pymongo.errors.BulkWriteError as bwe:
+                        pass
+                    
+                    self.error_label.after(0, lambda: self.stop_timer(text=f"Выполняется импорт, время: {self.elapsed_time} сек"))        
+            else:
+                self.error_label.after(0, lambda: self.stop_timer(text=f"Ошибка: не удалось подключиться к БД"))
+        else:
+            self.error_label.after(0, lambda: self.stop_timer(text=f"Файл не выбран."))
+    
+    def update_timer(self):
+        if self.thread_import_running:
+            self.error_label.config(text=f"Выполняется импорт, время: {self.elapsed_time} сек")
+            self.elapsed_time += 1
+            self.error_label.after(1000, self.update_timer)
+    
+    def stop_timer(self, text):
+        self.thread_import_running = False
+        self.error_label.config(text=text)

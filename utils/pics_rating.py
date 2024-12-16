@@ -22,9 +22,9 @@ def build_graph(products):
     # Plot the time series data
     graph = plt.figure(figsize=(10, 6))
     plt.bar(pics_list, ratings_list, color = 'blue', edgecolor='black')
-    plt.xlabel('Number of Pictures')
-    plt.ylabel('Average Review Rating')
-    plt.title('Dependence of product rating on the amount of media content')
+    plt.xlabel('Число картинок')
+    plt.ylabel('Средний рейтинг отзывов')
+    plt.title('Зависимость рейтинга от числа медиа картинок')
     plt.grid(True)
     plt.tight_layout()
     plt.show()

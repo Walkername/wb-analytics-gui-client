@@ -6,6 +6,11 @@ class DBService:
         self.client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000) # 3 sec to connect
         self.db = self.client[MONGO_CONFIG["database"]]
         self.collection = self.db["products"]
+        
+        try:
+            self.collection.create_index("wbId", unique=True)
+        except pymongo.errors.ServerSelectionTimeoutError as err:
+            print("MongoDB Connection Error")
     
     def is_connected(self):
         """Check if the database connection is active."""
@@ -28,3 +33,12 @@ class DBService:
     def get_by_entities(self, entities):
         products = self.collection.find({ "entity": {"$in": entities}})
         return products
+    
+    def insert_many(self, products):
+        self.collection.insert_many(products, ordered=False)
+    
+    def insert_one(self, products):
+        self.collection.insert_one(products)
+    
+    def count_documents(self):
+        return self.collection.count_documents({})

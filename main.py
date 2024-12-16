@@ -1,7 +1,7 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 
-from config.config import APP_CONFIG, MONGO_CONFIG
+from config.config import APP_CONFIG
 from views.main_view import MainWindow
 
 def on_exit(root):

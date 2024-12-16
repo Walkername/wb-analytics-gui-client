@@ -72,9 +72,9 @@ def build_graph(products):
     graph = plt.figure(figsize=(10, 6))
     plt.plot(new_dates, average_prices, marker='o', linestyle='-', color='b')
     plt.xticks(rotation=45, ha='right')
-    plt.xlabel('Timestamp')
-    plt.ylabel('Average Price (RUB)')
-    plt.title('Average Price History Across All Products')
+    plt.xlabel('Дата')
+    plt.ylabel('Средняя цена (RUB)')
+    plt.title('История цены')
     plt.grid(True)
     plt.tight_layout()
 

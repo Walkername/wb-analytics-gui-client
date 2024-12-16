@@ -81,12 +81,19 @@ class MainWindow:
         self.select_all_button.config(command=self.controller.toggle_select_all)
         
         self.export_data_button.config(command=self.controller.export_data)
+        
+        self.import_data_button.config(command=self.controller.import_data)
 
     def create_task_list(self):
         OPTIONS = [
             "История цены",
             "Рейтинг от числа картинок",
-            "Размеры одежды"
+            "Размеры одежды",
+            "Зависимость между рейтингом и стоимостью",
+            "Рейтинг брендов 1",
+            "Рейтинг брендов 2",
+            "Скидки брендов",
+            "История цены (37 категорий)"
         ]
         self.default_task = tk.StringVar()
         self.default_task.set(OPTIONS[0])
