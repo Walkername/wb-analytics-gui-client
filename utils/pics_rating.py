@@ -24,7 +24,7 @@ def build_graph(products):
     plt.bar(pics_list, ratings_list, color = 'blue', edgecolor='black')
     plt.xlabel('Число картинок')
     plt.ylabel('Средний рейтинг отзывов')
-    plt.title('Зависимость рейтинга от числа медиа картинок')
+    plt.title('Зависимость рейтинга от числа картинок')
     plt.grid(True)
     plt.tight_layout()
     plt.show()

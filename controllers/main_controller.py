@@ -179,7 +179,7 @@ class MainController:
                 pics_rating.build_graph(products)
             elif selected_option == "Размеры одежды":
                 product_sizes.build_graph(products)
-            elif selected_option == "Зависимость между рейтингом и стоимостью":
+            elif selected_option == "Рейтинг и стоимость":
                 rating_price.build_graph(products)
             elif selected_option == "Рейтинг брендов 1":
                 brand_ratings_1.build_graph(products)

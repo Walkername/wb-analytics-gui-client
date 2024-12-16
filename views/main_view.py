@@ -89,7 +89,7 @@ class MainWindow:
             "История цены",
             "Рейтинг от числа картинок",
             "Размеры одежды",
-            "Зависимость между рейтингом и стоимостью",
+            "Рейтинг и стоимость",
             "Рейтинг брендов 1",
             "Рейтинг брендов 2",
             "Скидки брендов",
@@ -113,6 +113,7 @@ class MainWindow:
             textvariable=self.default_task, 
             values=OPTIONS,
             state="readonly",
-            style="TCombobox"
+            style="TCombobox",
+            width=25
         )
-        self.task_list.grid(row=0, column=0, pady=10, padx=10)
+        self.task_list.grid(row=0, column=0, pady=10, padx=20)
