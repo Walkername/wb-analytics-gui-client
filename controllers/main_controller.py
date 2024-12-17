@@ -253,7 +253,7 @@ class MainController:
                     except pymongo.errors.BulkWriteError as bwe:
                         pass
                     
-                    self.error_label.after(0, lambda: self.stop_timer(text=f"Выполняется импорт, время: {self.elapsed_time} сек"))        
+                    self.error_label.after(0, lambda: self.stop_timer(text=f"Импорт выполнен, время: {self.elapsed_time} сек"))        
             else:
                 self.error_label.after(0, lambda: self.stop_timer(text=f"Ошибка: не удалось подключиться к БД"))
         else:
