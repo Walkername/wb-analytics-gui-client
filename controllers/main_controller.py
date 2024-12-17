@@ -195,15 +195,18 @@ class MainController:
             self.error_label.config(text=f"Необходимо выбрать хотя бы одну категорию.")
 
     def export_data(self):
-        # Start the export thread
-        thread_export = threading.Thread(target=self.export_thread, daemon=True)
-        thread_export.start()
-
-    def export_thread(self):
         # File selection dialog
         file_path = filedialog.askdirectory(title="Выберите папку для сохранения")
         self.error_label.config(text=f"")  # Clear any previous messages
+        
+        self.elapsed_time = 0
+        # Start the export thread
+        thread_export = threading.Thread(target=lambda: self.export_thread(file_path), daemon=True)
+        self.thread_running=True
+        thread_export.start()
+        self.update_timer(text="Выполняется экспорт")
 
+    def export_thread(self, file_path):
         if file_path:  # If a directory is selected
             print(f"Selected directory: {file_path}")
             if self.db_service.is_connected():
@@ -217,26 +220,24 @@ class MainController:
                 try:
                     with open(f"{file_path}/exported_data.json", "w", encoding="utf-8") as file:
                         json.dump(documents, file, indent=4, ensure_ascii=False)
-                    self.error_label.after(0, lambda: self.error_label.config(text="Данные успешно экспортированы"))
+                    self.error_label.after(0, lambda: self.stop_timer(text=f"Данные успешно экспортированы, время: {self.elapsed_time} сек"))
                 except Exception as e:
-                    self.error_label.after(0, lambda: self.error_label.config(text=f"Ошибка экспорта: {e}"))
+                    self.error_label.after(0, lambda: self.stop_timer(text=f"Ошибка экспорта: {e}"))
             else:
-                self.error_label.after(0, lambda: self.error_label.config(text="Ошибка: не удалось подключиться к БД"))
+                self.error_label.after(0, lambda: self.stop_timer(text="Ошибка: не удалось подключиться к БД"))
         else:
-            self.error_label.after(0, lambda: self.error_label.config(text="Директория не выбрана"))
+            self.error_label.after(0, lambda: self.stop_timer(text="Директория не выбрана"))
     
     def import_data(self):
         file_path = filedialog.askopenfilename(title="Выберите файл")
         self.error_label.config(text=f"")
         
         self.elapsed_time = 0
-        self.cur_import_num = 0
-        self.total_import_num = 0
         # Start the export thread
         thread_import = threading.Thread(target=lambda: self.import_thread(file_path), daemon=True)
-        self.thread_import_running = True
+        self.thread_running = True
         thread_import.start()
-        self.update_timer()
+        self.update_timer(text="Выполняется импорт")
     
     def import_thread(self, file_path):
         if file_path:
@@ -259,12 +260,12 @@ class MainController:
         else:
             self.error_label.after(0, lambda: self.stop_timer(text=f"Файл не выбран."))
     
-    def update_timer(self):
-        if self.thread_import_running:
-            self.error_label.config(text=f"Выполняется импорт, время: {self.elapsed_time} сек")
+    def update_timer(self, text):
+        if self.thread_running:
+            self.error_label.config(text=f"{text}, время: {self.elapsed_time} сек")
             self.elapsed_time += 1
-            self.error_label.after(1000, self.update_timer)
+            self.error_label.after(1000, lambda: self.update_timer(text))
     
     def stop_timer(self, text):
-        self.thread_import_running = False
+        self.thread_running = False
         self.error_label.config(text=text)
